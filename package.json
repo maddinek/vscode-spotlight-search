@@ -1,7 +1,7 @@
 {
-  "name": "vscode-intellij-search",
-  "displayName": "IntelliJ Find in Path",
-  "description": "Replicate IntelliJ's Find in Path dialog and results panel in VS Code",
+  "name": "vscode-spotlight-search",
+  "displayName": "Spotlight Search",
+  "description": "IntelliJ-style Find in Path dialog and results panel for VS Code",
   "version": "0.1.0",
   "publisher": "local",
   "engines": { "vscode": "^1.85.0" },
