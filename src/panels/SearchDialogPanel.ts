@@ -15,16 +15,23 @@ export class SearchDialogPanel implements vscode.Disposable {
     readonly onCancel = this._onCancel.event;
     readonly onDispose = this._onDispose.event;
     private readonly disposables: vscode.Disposable[] = [];
+    private pendingOverrides?: Partial<SearchOptions>;
 
     static createOrShow(
         context: vscode.ExtensionContext,
-        stateManager: SearchStateManager
+        stateManager: SearchStateManager,
+        overrideOptions?: Partial<SearchOptions>
     ): SearchDialogPanel {
         if (SearchDialogPanel.instance) {
             SearchDialogPanel.instance.panel.reveal(vscode.ViewColumn.One);
+            if (overrideOptions) {
+                const base = stateManager.load();
+                SearchDialogPanel.instance.post({ type: 'init', options: { ...base, ...overrideOptions } });
+            }
             return SearchDialogPanel.instance;
         }
         const instance = new SearchDialogPanel(context, stateManager);
+        instance.pendingOverrides = overrideOptions;
         SearchDialogPanel.instance = instance;
         return instance;
     }
@@ -58,7 +65,9 @@ export class SearchDialogPanel implements vscode.Disposable {
     private handleMessage(msg: WebviewMessage): void {
         switch (msg.type) {
             case 'ready': {
-                const options = this.stateManager.load();
+                const base = this.stateManager.load();
+                const options = this.pendingOverrides ? { ...base, ...this.pendingOverrides } : base;
+                this.pendingOverrides = undefined;
                 this.post({ type: 'init', options });
                 break;
             }
@@ -228,6 +237,20 @@ button:not(.toggle):not(.primary) {
 button:not(.toggle):not(.primary):hover {
   background: var(--vscode-button-secondaryHoverBackground, #45494e);
 }
+
+.path-display {
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+  font-family: var(--vscode-editor-font-family, monospace);
+  padding: 2px 6px;
+  background: var(--vscode-input-background);
+  border-radius: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: none;
+}
+.path-display.visible { display: block; }
   </style>
 </head>
 <body>

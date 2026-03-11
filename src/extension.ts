@@ -3,22 +3,22 @@ import { SearchStateManager } from './state/SearchStateManager';
 import { SearchEngine } from './search/SearchEngine';
 import { SearchDialogPanel } from './panels/SearchDialogPanel';
 import { ResultsPanelManager } from './panels/ResultsPanelManager';
+import { SearchOptions } from './types';
 
 export function activate(context: vscode.ExtensionContext): void {
     const stateManager = new SearchStateManager(context.workspaceState);
     const engine = new SearchEngine();
-const resultsPanel = new ResultsPanelManager(context.extensionUri);
+    const resultsPanel = new ResultsPanelManager(context.extensionUri);
 
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(ResultsPanelManager.viewType, resultsPanel)
     );
 
-    // Wire up search handlers once — not inside the command, to avoid stacking listeners
     let dialog: SearchDialogPanel | undefined;
 
-    const openCommand = vscode.commands.registerCommand('intellijSearch.open', () => {
+    function openDialog(overrideOptions?: Partial<SearchOptions>): void {
         const isNew = !dialog;
-        dialog = SearchDialogPanel.createOrShow(context, stateManager);
+        dialog = SearchDialogPanel.createOrShow(context, stateManager, overrideOptions);
 
         if (isNew) {
             dialog.onSearch(async (options) => {
@@ -31,7 +31,7 @@ const resultsPanel = new ResultsPanelManager(context.extensionUri);
                     (summary) => {
                         resultsPanel.postDone(summary);
                         if (summary.matchCount === 0) {
-                            vscode.window.showInformationMessage(`IntelliJ Search: No results found for "${options.query}"`);
+                            vscode.window.showInformationMessage(`Spotlight Search: No results found for "${options.query}"`);
                         }
                     },
                     (message) => resultsPanel.postError(message)
@@ -43,12 +43,23 @@ const resultsPanel = new ResultsPanelManager(context.extensionUri);
                 resultsPanel.postCancelled();
             });
 
-            // Reset dialog ref when it's closed so next open re-attaches
             dialog.onDispose(() => { dialog = undefined; });
         }
-    });
+    }
 
-    context.subscriptions.push(openCommand, engine);
+    context.subscriptions.push(
+        vscode.commands.registerCommand('intellijSearch.open', () => openDialog()),
+
+        vscode.commands.registerCommand('intellijSearch.searchInFolder', (uri: vscode.Uri) => {
+            openDialog({ scope: 'directory', directoryPath: uri.fsPath });
+        }),
+
+        vscode.commands.registerCommand('intellijSearch.searchInFile', (uri: vscode.Uri) => {
+            openDialog({ scope: 'currentFile', directoryPath: uri.fsPath });
+        }),
+
+        engine
+    );
 }
 
 export function deactivate(): void {

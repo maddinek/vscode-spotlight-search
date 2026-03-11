@@ -36,6 +36,9 @@ function render(options: SearchOptions): void {
         <label>Context lines:</label>
         <input id="contextLines" type="number" min="0" max="5" value="${options.contextLines}" style="width:42px" />
       </div>
+      <div id="path-display" class="path-display${(options.scope === 'directory' || options.scope === 'currentFile') && options.directoryPath ? ' visible' : ''}">
+        ${escHtml(options.directoryPath ?? '')}
+      </div>
       <div class="actions-row">
         <button id="btn-find" class="primary">Find</button>
         <button id="btn-cancel">Cancel</button>
@@ -56,6 +59,18 @@ function render(options: SearchOptions): void {
             document.getElementById(id)!.classList.toggle('active');
         });
     }
+
+    // Wire up scope change — show/hide path display
+    const scopeSelect = document.getElementById('scope') as HTMLSelectElement;
+    const pathDisplay = document.getElementById('path-display') as HTMLDivElement;
+    scopeSelect.addEventListener('change', () => {
+        const scope = scopeSelect.value as SearchScope;
+        if ((scope === 'directory' || scope === 'currentFile') && options.directoryPath) {
+            pathDisplay.classList.add('visible');
+        } else {
+            pathDisplay.classList.remove('visible');
+        }
+    });
 
     // Wire up submit
     const submit = () => {

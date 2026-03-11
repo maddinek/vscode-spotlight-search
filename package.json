@@ -14,7 +14,9 @@
         "command": "intellijSearch.open",
         "title": "Find in Path (IntelliJ Style)",
         "category": "Search"
-      }
+      },
+      { "command": "intellijSearch.searchInFolder", "title": "Spotlight Search Here", "category": "Search" },
+      { "command": "intellijSearch.searchInFile", "title": "Spotlight Search in File", "category": "Search" }
     ],
     "keybindings": [
       {
@@ -24,6 +26,12 @@
         "when": "!terminalFocus"
       }
     ],
+    "menus": {
+      "explorer/context": [
+        { "command": "intellijSearch.searchInFolder", "when": "explorerResourceIsFolder", "group": "search@1" },
+        { "command": "intellijSearch.searchInFile", "when": "!explorerResourceIsFolder && resourceScheme == file", "group": "search@1" }
+      ]
+    },
     "viewsContainers": {
       "panel": [
         {

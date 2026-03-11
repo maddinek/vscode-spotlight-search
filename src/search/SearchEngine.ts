@@ -56,7 +56,7 @@ export class SearchEngine implements vscode.Disposable {
     ): Promise<void> {
         this.cancel();
 
-        const searchPaths = await this.scopeResolver.resolvePaths(options.scope);
+        const searchPaths = await this.scopeResolver.resolvePaths(options);
         if (searchPaths.length === 0) {
             onDone({ fileCount: 0, matchCount: 0 });
             return;

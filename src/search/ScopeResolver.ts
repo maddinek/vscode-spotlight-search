@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
-import { SearchScope } from '../types';
+import { SearchOptions } from '../types';
 
 export class ScopeResolver {
-    async resolvePaths(scope: SearchScope): Promise<string[]> {
-        switch (scope) {
+    async resolvePaths(options: SearchOptions): Promise<string[]> {
+        switch (options.scope) {
             case 'workspace':
                 return (vscode.workspace.workspaceFolders ?? []).map(f => f.uri.fsPath);
 
@@ -16,6 +16,9 @@ export class ScopeResolver {
             }
 
             case 'directory': {
+                if (options.directoryPath) {
+                    return [options.directoryPath];
+                }
                 const dirs = await vscode.window.showOpenDialog({
                     canSelectFiles: false,
                     canSelectFolders: true,

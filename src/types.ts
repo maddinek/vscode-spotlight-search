@@ -5,6 +5,7 @@ export interface SearchOptions {
     isWholeWord: boolean;
     fileMask: string;        // e.g. "*.ts,*.tsx" — comma separated globs
     scope: SearchScope;
+    directoryPath?: string;
     contextLines: number;    // 0–5
     useIgnoreFiles: boolean; // respect .gitignore etc
 }
